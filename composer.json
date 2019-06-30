@@ -3,7 +3,7 @@
   "description": "Circuit Breaker for PHP",
   "type": "library",
   "license": "MIT",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "authors": [
     {
       "name": "Leonardo Carmo",
@@ -16,7 +16,11 @@
     }
   },
   "require": {
-    "php": ">=7",
+    "php": ">=7.1",
     "ext-redis": "*"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~7.0",
+    "phpunit/php-code-coverage": "^6.1"
   }
 }
