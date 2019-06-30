@@ -7,23 +7,25 @@
 
 For more information about this pattern see [this](https://martinfowler.com/bliki/CircuitBreaker.html).  
   
-> This implementation works only with redis adapter yet
+> This implementation has only with redis adapter yet
 
 ## Starting with composer
 `composer require leocarmo/circuit-breaker-php`
 
-## Configure redis adapter
+## Redis adapter
 The first argument is a redis connection, the second is your product name, for redis namespace avoid key conflicts with another product using the same redis.
 
 ```php
 use LeoCarmo\CircuitBreaker\CircuitBreaker;
 
-// Connect to redis  
-$redis = new \Redis();  
-$redis->connect('localhost', 6379);  
-  
-// Set redis adapter for CB  
-CircuitBreaker::setRedisSettings($redis, 'my-product');
+// Connect to redis
+$redis = new \Redis();
+$redis->connect('localhost', 6379);
+
+$adapter = new \LeoCarmo\CircuitBreaker\Adapters\RedisAdapter($redis, 'my-product');
+
+// Set redis adapter for CB
+CircuitBreaker::setAdapter($adapter);
 ```
 
 ## Set circuit break settings
