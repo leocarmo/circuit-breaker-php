@@ -7,8 +7,10 @@ use LeoCarmo\CircuitBreaker\CircuitBreaker;
 $redis = new \Redis();
 $redis->connect('localhost', 6379);
 
+$adapter = new \LeoCarmo\CircuitBreaker\Adapters\RedisAdapter($redis, 'my-product');
+
 // Set redis adapter for CB
-CircuitBreaker::setRedisSettings($redis, 'my-product');
+CircuitBreaker::setAdapter($adapter);
 
 // Configure settings for CB
 CircuitBreaker::setGlobalSettings([

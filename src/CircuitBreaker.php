@@ -2,23 +2,20 @@
 
 namespace LeoCarmo\CircuitBreaker;
 
+use LeoCarmo\CircuitBreaker\Adapters\AdapterInterface;
+
 class CircuitBreaker
 {
 
     /**
-     * @var \Redis
+     * @var AdapterInterface
      */
-    protected static $redisClient;
+    protected static $adapter;
 
     /**
      * @var string
      */
     protected static $redisNamespace;
-
-    /**
-     * @var array
-     */
-    protected static $cachedService = [];
 
     /**
      * @var array
@@ -40,15 +37,19 @@ class CircuitBreaker
     ];
 
     /**
-     * Set settings for start circuit service
-     *
-     * @param \Redis $redis
-     * @param string $redisNamespace
+     * @param AdapterInterface $adapter
      */
-    public static function setRedisSettings(\Redis $redis, string $redisNamespace)
+    public static function setAdapter(AdapterInterface $adapter) : void
     {
-        self::$redisClient = $redis;
-        self::$redisNamespace = $redisNamespace;
+        self::$adapter = $adapter;
+    }
+
+    /**
+     * @return AdapterInterface
+     */
+    public static function getAdapter() : AdapterInterface
+    {
+        return self::$adapter;
     }
 
     /**
@@ -56,11 +57,19 @@ class CircuitBreaker
      *
      * @param array $settings
      */
-    public static function setGlobalSettings(array $settings)
+    public static function setGlobalSettings(array $settings) : void
     {
         foreach (self::$defaultSettings as $defaultSetting => $settingValue) {
-            self::$globalSettings[$defaultSetting] = $settings[$defaultSetting] ?? $settingValue;
+            self::$globalSettings[$defaultSetting] = (int) $settings[$defaultSetting] ?? $settingValue;
         }
+    }
+
+    /**
+     * @return array
+     */
+    public static function getGlobalSettings() : array
+    {
+        return self::$globalSettings;
     }
 
     /**
@@ -69,16 +78,28 @@ class CircuitBreaker
      * @param string $service
      * @param array $settings
      */
-    public static function setServiceSettings(string $service, array $settings)
+    public static function setServiceSettings(string $service, array $settings) : void
     {
-        $service = self::makeServiceName($service);
-
         foreach (self::$defaultSettings as $defaultSetting => $settingValue) {
             self::$servicesSettings[$service][$defaultSetting] =
-                $settings[$defaultSetting]
+                (int) $settings[$defaultSetting]
                 ?? self::$globalSettings[$defaultSetting]
                 ?? $settingValue;
         }
+    }
+
+    /**
+     * Get setting for a service, if not set, get from default settings
+     *
+     * @param string $service
+     * @param string $setting
+     * @return mixed
+     */
+    public static function getServiceSetting(string $service, string $setting)
+    {
+        return self::$servicesSettings[$service][$setting]
+            ?? self::$globalSettings[$setting]
+            ?? self::$defaultSettings[$setting];
     }
 
     /**
@@ -86,16 +107,16 @@ class CircuitBreaker
      *
      * @param string $service
      * @return bool
-     * @throws \RedisException
      */
-    public static function isAvailable(string $service)
+    public static function isAvailable(string $service) : bool
     {
-        if (self::isOpen($service)) {
+        if (self::$adapter->isOpen($service)) {
             return false;
         }
 
-        if (self::reachRateLimit($service)) {
-            self::setAllOpen($service);
+        if (self::$adapter->reachRateLimit($service)) {
+            self::$adapter->setOpenCircuit($service);
+            self::$adapter->setHalfOpenCircuit($service);
             return false;
         }
 
@@ -106,26 +127,17 @@ class CircuitBreaker
      * Set new failure for a service
      *
      * @param string $service
-     * @return bool|int
-     * @throws \RedisException
+     * @return bool
      */
     public static function failure(string $service)
     {
-        if (self::isHalfOpen($service)) {
-            self::setAllOpen($service);
+        if (self::$adapter->isHalfOpen($service)) {
+            self::$adapter->setOpenCircuit($service);
+            self::$adapter->setHalfOpenCircuit($service);
             return false;
         }
 
-        $serviceFailures = self::makeServiceName($service) . ':failures';
-
-        if (! self::redis()->get($serviceFailures)) {
-            self::redis()->multi();
-            self::redis()->incr($serviceFailures);
-            self::redis()->expire($serviceFailures, self::getServiceSetting($service, 'timeWindow'));
-            return self::redis()->exec()[0] ?? 0;
-        }
-
-        return self::redis()->incr($serviceFailures);
+        return self::$adapter->incrementFailure($service);
     }
 
     /**
@@ -133,134 +145,9 @@ class CircuitBreaker
      *
      * @param string $service
      * @return bool|int
-     * @throws \RedisException
      */
     public static function success(string $service)
     {
-        return self::redis()->delete(
-            self::redis()->keys(
-                self::makeServiceName($service) . ':*'
-            )
-        );
-    }
-
-    /**
-     * Internal methods
-     */
-
-    /**
-     * Return redis client
-     *
-     * @return \Redis
-     * @throws \RedisException
-     */
-    protected static function redis()
-    {
-        if (self::$redisClient instanceof \Redis) {
-            return self::$redisClient;
-        }
-
-        throw new \RedisException('Redis client not defined.');
-    }
-
-    /**
-     * Get setting for a service, if not set, get from default settings
-     *
-     * @param string $service
-     * @param string $setting
-     * @return mixed
-     */
-    protected static function getServiceSetting(string $service, string $setting)
-    {
-        $service = self::makeServiceName($service);
-
-        return self::$servicesSettings[$service][$setting]
-            ?? self::$globalSettings[$setting]
-            ?? self::$defaultSettings[$setting];
-    }
-
-    /**
-     * @param string $service
-     * @return string
-     */
-    protected static function makeServiceName(string $service)
-    {
-        if (isset(self::$cachedService[$service])) {
-            return self::$cachedService[$service];
-        }
-
-        return self::$cachedService[$service] = 'circuit-breaker:' . self::$redisNamespace . ':' . base64_encode($service);
-    }
-
-    /**
-     * @param string $service
-     * @throws \RedisException
-     */
-    protected static function setOpenCircuit(string $service)
-    {
-        self::redis()->set(
-            self::makeServiceName($service) . ':open',
-            time(),
-            self::getServiceSetting($service, 'timeWindow')
-        );
-    }
-
-    /**
-     * @param string $service
-     * @throws \RedisException
-     */
-    protected static function setHalfOpenCircuit(string $service)
-    {
-        self::redis()->set(
-            self::makeServiceName($service) . ':half_open',
-            time(),
-            self::getServiceSetting($service, 'timeWindow') + self::getServiceSetting($service, 'intervalToHalfOpen')
-        );
-    }
-
-    /**
-     * @param string $service
-     * @throws \RedisException
-     */
-    protected static function setAllOpen(string $service)
-    {
-        self::redis()->multi();
-        self::setOpenCircuit($service);
-        self::setHalfOpenCircuit($service);
-        self::redis()->exec();
-    }
-
-    /**
-     * @param string $service
-     * @return bool
-     * @throws \RedisException
-     */
-    protected static function isOpen(string $service)
-    {
-        return self::redis()->get(self::makeServiceName($service) . ':open');
-    }
-
-    /**
-     * @param string $service
-     * @return bool
-     * @throws \RedisException
-     */
-    protected static function isHalfOpen(string $service)
-    {
-        return self::redis()->get(self::makeServiceName($service) . ':half_open');
-    }
-
-    /**
-     * @param string $service
-     * @return bool
-     * @throws \RedisException
-     */
-    protected static function reachRateLimit(string $service)
-    {
-        $failures = self::redis()->get(
-            self::makeServiceName($service) . ':failures'
-        );
-
-        return $failures && $failures >= self::getServiceSetting($service, 'failureRateThreshold');
+        return self::$adapter->setSuccess($service);
     }
 }
