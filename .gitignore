@@ -3,4 +3,4 @@
 /.vagrant
 /vendor
 composer.lock
-index.php
+.env
