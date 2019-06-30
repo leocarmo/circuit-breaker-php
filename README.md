@@ -9,6 +9,9 @@ For more information about this pattern see [this](https://martinfowler.com/blik
   
 > This implementation works only with redis adapter yet
 
+## Starting with composer
+`composer require leocarmo/circuit-breaker-php`
+
 ## Configure redis adapter
 The first argument is a redis connection, the second is your product name, for redis namespace avoid key conflicts with another product using the same redis.
 
