@@ -1,0 +1,22 @@
+{
+  "name": "leocarmo/circuit-breaker-php",
+  "description": "Circuit Breaker for PHP",
+  "type": "library",
+  "license": "MIT",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name": "Leonardo Carmo",
+      "email": "leonardo.docarmo@hotmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "LeoCarmo\\CircuitBreaker\\": "src/"
+    }
+  },
+  "require": {
+    "php": ">=7",
+    "ext-redis": "*"
+  }
+}
