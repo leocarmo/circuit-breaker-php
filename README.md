@@ -7,7 +7,7 @@
 
 For more information about this pattern see [this](https://martinfowler.com/bliki/CircuitBreaker.html).  
   
-> This implementation has only with redis adapter yet
+> This implementation has only redis adapter yet
 
 ## Starting with composer
 `composer require leocarmo/circuit-breaker-php`
