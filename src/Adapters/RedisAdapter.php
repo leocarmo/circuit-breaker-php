@@ -89,7 +89,7 @@ class RedisAdapter implements AdapterInterface
      */
     public function setSuccess(string $service) : bool
     {
-        return (bool) $this->redis->delete(
+        return (bool) $this->redis->del(
             $this->redis->keys(
                 $this->makeNamespace($service) . ':*'
             )

@@ -60,7 +60,8 @@ class CircuitBreaker
     public static function setGlobalSettings(array $settings) : void
     {
         foreach (self::$defaultSettings as $defaultSetting => $settingValue) {
-            self::$globalSettings[$defaultSetting] = (int) $settings[$defaultSetting] ?? $settingValue;
+            self::$globalSettings[$defaultSetting] =
+                (int) ($settings[$defaultSetting] ?? $settingValue);
         }
     }
 
@@ -82,9 +83,7 @@ class CircuitBreaker
     {
         foreach (self::$defaultSettings as $defaultSetting => $settingValue) {
             self::$servicesSettings[$service][$defaultSetting] =
-                (int) $settings[$defaultSetting]
-                ?? self::$globalSettings[$defaultSetting]
-                ?? $settingValue;
+                (int) ($settings[$defaultSetting] ?? self::$globalSettings[$defaultSetting] ?? $settingValue);
         }
     }
 
