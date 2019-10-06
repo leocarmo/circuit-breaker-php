@@ -31,11 +31,11 @@ class SettingsTest extends \PHPUnit\Framework\TestCase
     {
         $failureRateThreshold = 20;
 
-        CircuitBreaker::setServiceSettings('my-service', [
+        CircuitBreaker::setServiceSettings('my-service-2', [
             'failureRateThreshold' => $failureRateThreshold,
         ]);
 
-        $serviceSetting = CircuitBreaker::getServiceSetting('my-service', 'failureRateThreshold');
+        $serviceSetting = CircuitBreaker::getServiceSetting('my-service-2', 'failureRateThreshold');
 
         $this->assertEquals($failureRateThreshold, $serviceSetting);
     }
