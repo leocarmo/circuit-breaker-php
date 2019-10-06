@@ -1,9 +1,7 @@
 language: php
 
 php:
-  - '7.1'
-  - '7.2'
-  - '7.3'
+  - '7.3.8'
 
 env:
   - REDIS_HOST=0.0.0.0 REDIS_PORT=6379
