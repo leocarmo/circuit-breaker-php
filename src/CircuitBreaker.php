@@ -82,9 +82,7 @@ class CircuitBreaker
     {
         foreach (self::$defaultSettings as $defaultSetting => $settingValue) {
             self::$servicesSettings[$service][$defaultSetting] =
-                (int) $settings[$defaultSetting]
-                ?? self::$globalSettings[$defaultSetting]
-                ?? $settingValue;
+                (int) ($settings[$defaultSetting] ?? self::$globalSettings[$defaultSetting] ?? $settingValue);
         }
     }
 
