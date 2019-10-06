@@ -39,11 +39,4 @@ class SettingsTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals($failureRateThreshold, $serviceSetting);
     }
-
-    public function testGetServiceSetting()
-    {
-        $serviceSetting = CircuitBreaker::getServiceSetting('my-service', 'failureRateThreshold');
-
-        $this->assertEquals(20, $serviceSetting);
-    }
 }
