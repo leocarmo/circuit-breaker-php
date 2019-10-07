@@ -3,7 +3,7 @@
   "description": "Circuit Breaker for PHP",
   "type": "library",
   "license": "MIT",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "authors": [
     {
       "name": "Leonardo Carmo",
