@@ -91,7 +91,6 @@ class RedisAdapter implements AdapterInterface
     {
         return $this->redis->del($this->makeNamespace($service) . ':open')
             && $this->redis->del($this->makeNamespace($service) . ':failures')
-            && $this->redis->del($this->makeNamespace($service) . ':open')
             && $this->redis->del($this->makeNamespace($service) . ':half_open');
     }
 
