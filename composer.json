@@ -1,13 +1,13 @@
 {
-  "name": "afraprg/circuit-breaker-php",
+  "name": "leocarmo/circuit-breaker-php",
   "description": "Circuit Breaker for PHP",
   "type": "library",
   "license": "MIT",
   "version": "2.0.2",
   "authors": [
     {
-      "name": "Mostafa Hosseini",
-      "email": "afraprg@gmail.com"
+      "name": "Leonardo Carmo",
+      "email": "leonardo.docarmo@hotmail.com"
     }
   ],
   "autoload": {
