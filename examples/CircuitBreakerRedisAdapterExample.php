@@ -32,10 +32,16 @@ if (! CircuitBreaker::isAvailable('my-service')) {
 }
 
 // Usage example for success and failure
+function myService() {
+    if (rand(1, 100) >= 50) {
+        throw new RuntimeException('Something got wrong!');
+    }
+}
+
 try {
-    \Service::execute();
+    myService();
     CircuitBreaker::success('my-service');
-} catch (\ServiceException $e) {
+} catch (RuntimeException $e) {
     // If an error occurred, it must be recorded as failure.
     CircuitBreaker::failure('my-service');
     die($e->getMessage());

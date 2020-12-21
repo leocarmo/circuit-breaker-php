@@ -37,11 +37,11 @@ class RedisAdapter implements AdapterInterface
 
     /**
      * @param string $service
-     * @return bool|string
+     * @return bool
      */
     public function isOpen(string $service): bool
     {
-        return $this->redis->get($this->makeNamespace($service) . ':open');
+        return (bool) $this->redis->get($this->makeNamespace($service) . ':open');
     }
 
     /**
@@ -72,7 +72,7 @@ class RedisAdapter implements AdapterInterface
      */
     public function incrementFailure(string $service) : bool
     {
-        $serviceName = self::makeNamespace($service) . ':failures';
+        $serviceName = $this->makeNamespace($service) . ':failures';
 
         if (! $this->redis->get($serviceName)) {
             $this->redis->multi();
