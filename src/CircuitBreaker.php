@@ -10,27 +10,22 @@ class CircuitBreaker
     /**
      * @var AdapterInterface
      */
-    protected static $adapter;
-
-    /**
-     * @var string
-     */
-    protected static $redisNamespace;
+    protected static AdapterInterface $adapter;
 
     /**
      * @var array
      */
-    protected static $servicesSettings;
+    protected static array $servicesSettings;
 
     /**
      * @var array
      */
-    protected static $globalSettings;
+    protected static array $globalSettings;
 
     /**
      * @var array
      */
-    protected static $defaultSettings = [
+    protected static array $defaultSettings = [
         'timeWindow' => 60,
         'failureRateThreshold' => 50,
         'intervalToHalfOpen' => 30,
@@ -39,7 +34,7 @@ class CircuitBreaker
     /**
      * @param AdapterInterface $adapter
      */
-    public static function setAdapter(AdapterInterface $adapter) : void
+    public static function setAdapter(AdapterInterface $adapter): void
     {
         self::$adapter = $adapter;
     }
@@ -47,7 +42,7 @@ class CircuitBreaker
     /**
      * @return AdapterInterface
      */
-    public static function getAdapter() : AdapterInterface
+    public static function getAdapter(): AdapterInterface
     {
         return self::$adapter;
     }
@@ -57,18 +52,17 @@ class CircuitBreaker
      *
      * @param array $settings
      */
-    public static function setGlobalSettings(array $settings) : void
+    public static function setGlobalSettings(array $settings): void
     {
-        foreach (self::$defaultSettings as $defaultSetting => $settingValue) {
-            self::$globalSettings[$defaultSetting] =
-                (int) ($settings[$defaultSetting] ?? $settingValue);
+        foreach (self::$defaultSettings as $defaultSettingKey => $defaultSettingValue) {
+            self::$globalSettings[$defaultSettingKey] = (int) ($settings[$defaultSettingKey] ?? $defaultSettingValue);
         }
     }
 
     /**
      * @return array
      */
-    public static function getGlobalSettings() : array
+    public static function getGlobalSettings(): array
     {
         return self::$globalSettings;
     }
@@ -81,9 +75,9 @@ class CircuitBreaker
      */
     public static function setServiceSettings(string $service, array $settings) : void
     {
-        foreach (self::$defaultSettings as $defaultSetting => $settingValue) {
-            self::$servicesSettings[$service][$defaultSetting] =
-                (int) ($settings[$defaultSetting] ?? self::$globalSettings[$defaultSetting] ?? $settingValue);
+        foreach (self::$defaultSettings as $defaultSettingKey => $defaultSettingValue) {
+            self::$servicesSettings[$service][$defaultSettingKey] =
+                (int) ($settings[$defaultSettingKey] ?? self::$globalSettings[$defaultSettingKey] ?? $defaultSettingValue);
         }
     }
 
@@ -107,7 +101,7 @@ class CircuitBreaker
      * @param string $service
      * @return bool
      */
-    public static function isAvailable(string $service) : bool
+    public static function isAvailable(string $service): bool
     {
         if (self::$adapter->isOpen($service)) {
             return false;
@@ -128,7 +122,7 @@ class CircuitBreaker
      * @param string $service
      * @return bool
      */
-    public static function failure(string $service)
+    public static function failure(string $service): bool
     {
         if (self::$adapter->isHalfOpen($service)) {
             self::$adapter->setOpenCircuit($service);
@@ -147,6 +141,6 @@ class CircuitBreaker
      */
     public static function success(string $service)
     {
-        return self::$adapter->setSuccess($service);
+        self::$adapter->setSuccess($service);
     }
 }
