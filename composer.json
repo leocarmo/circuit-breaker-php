@@ -15,12 +15,12 @@
     }
   },
   "require": {
-    "php": ">=7.1",
+    "php": "^7.4 || ^8.0",
     "ext-redis": "*"
   },
   "require-dev": {
-    "phpunit/phpunit": "~7.0",
-    "phpunit/php-code-coverage": "^6.1",
-    "symfony/var-dumper": "^4.3"
+    "phpunit/phpunit": "^9",
+    "phpunit/php-code-coverage": "^9.2",
+    "symfony/var-dumper": "^5.2"
   }
 }

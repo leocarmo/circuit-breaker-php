@@ -2,33 +2,34 @@
 
 namespace LeoCarmo\CircuitBreaker\Adapters;
 
+use Redis;
 use LeoCarmo\CircuitBreaker\CircuitBreaker;
 
 class RedisAdapter implements AdapterInterface
 {
 
     /**
-     * @var \Redis
+     * @var Redis
      */
-    protected $redis;
+    protected Redis $redis;
 
     /**
      * @var string
      */
-    protected $redisNamespace;
+    protected string $redisNamespace;
 
     /**
      * @var array
      */
-    protected $cachedService = [];
+    protected array $cachedService = [];
 
     /**
      * Set settings for start circuit service
      *
-     * @param \Redis $redis
+     * @param Redis $redis
      * @param string $redisNamespace
      */
-    public function __construct(\Redis $redis, string $redisNamespace)
+    public function __construct(Redis $redis, string $redisNamespace)
     {
         $this->redis = $redis;
         $this->redisNamespace = $redisNamespace;
@@ -36,31 +37,31 @@ class RedisAdapter implements AdapterInterface
 
     /**
      * @param string $service
-     * @return bool|string
+     * @return bool
      */
-    public function isOpen(string $service) : bool
+    public function isOpen(string $service): bool
     {
-        return $this->redis->get($this->makeNamespace($service) . ':open');
+        return (bool) $this->redis->get($this->makeNamespace($service) . ':open');
     }
 
     /**
      * @param string $service
      * @return bool
      */
-    public function reachRateLimit(string $service) : bool
+    public function reachRateLimit(string $service): bool
     {
-        $failures = $this->redis->get(
+        $failures = (int) $this->redis->get(
             $this->makeNamespace($service) . ':failures'
         );
 
-        return $failures && $failures >= CircuitBreaker::getServiceSetting($service, 'failureRateThreshold');
+        return ($failures >= CircuitBreaker::getServiceSetting($service, 'failureRateThreshold'));
     }
 
     /**
      * @param string $service
      * @return bool|string
      */
-    public function isHalfOpen(string $service) : bool
+    public function isHalfOpen(string $service): bool
     {
         return (bool) $this->redis->get($this->makeNamespace($service) . ':half_open');
     }
@@ -71,33 +72,36 @@ class RedisAdapter implements AdapterInterface
      */
     public function incrementFailure(string $service) : bool
     {
-        $serviceFailures = self::makeNamespace($service) . ':failures';
+        $serviceName = $this->makeNamespace($service) . ':failures';
 
-        if (! $this->redis->get($serviceFailures)) {
+        if (! $this->redis->get($serviceName)) {
             $this->redis->multi();
-            $this->redis->incr($serviceFailures);
-            $this->redis->expire($serviceFailures, CircuitBreaker::getServiceSetting($service, 'timeWindow'));
-            return (bool) $this->redis->exec()[0] ?? false;
+            $this->redis->incr($serviceName);
+            $this->redis->expire($serviceName, CircuitBreaker::getServiceSetting($service, 'timeWindow'));
+            return (bool) ($this->redis->exec()[0] ?? false);
         }
 
-        return (bool) $this->redis->incr($serviceFailures);
+        return (bool) $this->redis->incr($serviceName);
     }
 
     /**
      * @param string $service
-     * @return bool
      */
-    public function setSuccess(string $service) : bool
+    public function setSuccess(string $service): void
     {
-        return $this->redis->del($this->makeNamespace($service) . ':open')
-            && $this->redis->del($this->makeNamespace($service) . ':failures')
-            && $this->redis->del($this->makeNamespace($service) . ':half_open');
+        $serviceName = $this->makeNamespace($service);
+
+        $this->redis->multi();
+        $this->redis->del($serviceName . ':open');
+        $this->redis->del($serviceName . ':failures');
+        $this->redis->del($serviceName . ':half_open');
+        $this->redis->exec();
     }
 
     /**
      * @param string $service
      */
-    public function setOpenCircuit(string $service) : void
+    public function setOpenCircuit(string $service): void
     {
         $this->redis->set(
             $this->makeNamespace($service) . ':open',
@@ -109,7 +113,7 @@ class RedisAdapter implements AdapterInterface
     /**
      * @param string $service
      */
-    public function setHalfOpenCircuit(string $service) : void
+    public function setHalfOpenCircuit(string $service): void
     {
         $this->redis->set(
             $this->makeNamespace($service) . ':half_open',
@@ -123,7 +127,7 @@ class RedisAdapter implements AdapterInterface
      * @param string $service
      * @return string
      */
-    protected function makeNamespace(string $service)
+    protected function makeNamespace(string $service): string
     {
         if (isset($this->cachedService[$service])) {
             return $this->cachedService[$service];
