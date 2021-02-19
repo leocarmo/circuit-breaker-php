@@ -6,6 +6,9 @@ use LeoCarmo\CircuitBreaker\Adapters\AdapterInterface;
 
 class CircuitBreaker
 {
+    public const TIME_WINDOW = 60;
+    public const FAILURE_RATE_THRESHOLD = 50;
+    public const INTERVAL_TO_HALF_OPEN = 30;
 
     /**
      * @var AdapterInterface
@@ -26,13 +29,14 @@ class CircuitBreaker
      * @var array
      */
     protected static array $defaultSettings = [
-        'timeWindow' => 60,
-        'failureRateThreshold' => 50,
-        'intervalToHalfOpen' => 30,
+        'timeWindow' => self::TIME_WINDOW,
+        'failureRateThreshold' => self::FAILURE_RATE_THRESHOLD,
+        'intervalToHalfOpen' => self::INTERVAL_TO_HALF_OPEN,
     ];
 
     /**
      * @param AdapterInterface $adapter
+     * @return void
      */
     public static function setAdapter(AdapterInterface $adapter): void
     {
@@ -51,6 +55,7 @@ class CircuitBreaker
      * Set global settings for all services
      *
      * @param array $settings
+     * @return void
      */
     public static function setGlobalSettings(array $settings): void
     {
@@ -72,6 +77,7 @@ class CircuitBreaker
      *
      * @param string $service
      * @param array $settings
+     * @return void
      */
     public static function setServiceSettings(string $service, array $settings) : void
     {
@@ -137,7 +143,7 @@ class CircuitBreaker
      * Record success and clear all status
      *
      * @param string $service
-     * @return bool|int
+     * @return void
      */
     public static function success(string $service)
     {
