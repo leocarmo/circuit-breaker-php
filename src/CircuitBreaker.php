@@ -13,22 +13,22 @@ class CircuitBreaker
     /**
      * @var AdapterInterface
      */
-    protected static AdapterInterface $adapter;
+    protected static $adapter;
 
     /**
      * @var array
      */
-    protected static array $servicesSettings;
+    protected static $servicesSettings;
 
     /**
      * @var array
      */
-    protected static array $globalSettings;
+    protected static $globalSettings;
 
     /**
      * @var array
      */
-    protected static array $defaultSettings = [
+    protected static $defaultSettings = [
         'timeWindow' => self::TIME_WINDOW,
         'failureRateThreshold' => self::FAILURE_RATE_THRESHOLD,
         'intervalToHalfOpen' => self::INTERVAL_TO_HALF_OPEN,

@@ -17,12 +17,12 @@ class RedisAdapter implements AdapterInterface
     /**
      * @var string
      */
-    protected string $redisNamespace;
+    protected $redisNamespace;
 
     /**
      * @var array
      */
-    protected array $cachedService = [];
+    protected $cachedService = [];
 
     /**
      * Set settings for start circuit service
