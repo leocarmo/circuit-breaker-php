@@ -1,27 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         backupGlobals="false"
+<phpunit backupGlobals="false"
          backupStaticAttributes="false"
          colors="true"
          convertErrorsToExceptions="true"
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          processIsolation="false"
-         stopOnFailure="false"
-         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
-  <coverage processUncoveredFiles="true">
-    <include>
-      <directory suffix=".php">./src</directory>
-    </include>
-    <report>
-      <clover outputFile="./.ci/codeCoverage/codeCoverage.xml"/>
-      <html outputDirectory="./.ci/codeCoverage/" lowUpperBound="35" highLowerBound="70"/>
-    </report>
-  </coverage>
+         stopOnFailure="false">
   <testsuites>
     <testsuite name="Application Test Suite">
       <directory suffix="Test.php">./tests</directory>
     </testsuite>
   </testsuites>
-  <logging/>
+  <filter>
+    <whitelist processUncoveredFilesFromWhitelist="true">
+      <directory suffix=".php">./src</directory>
+    </whitelist>
+  </filter>
+  <logging>
+    <log type="coverage-html" target="./.ci/codeCoverage/" lowUpperBound="35" highLowerBound="70"/>
+    <log type="coverage-clover" target="./.ci/codeCoverage/codeCoverage.xml"/>
+  </logging>
 </phpunit>
