@@ -3,15 +3,16 @@
 namespace LeoCarmo\CircuitBreaker\Adapters;
 
 use Redis;
+use RedisCluster;
 use LeoCarmo\CircuitBreaker\CircuitBreaker;
 
 class RedisAdapter implements AdapterInterface
 {
 
     /**
-     * @var Redis
+     * @var Redis|RedisCluster
      */
-    protected Redis $redis;
+    protected $redis;
 
     /**
      * @var string
@@ -26,13 +27,22 @@ class RedisAdapter implements AdapterInterface
     /**
      * Set settings for start circuit service
      *
-     * @param Redis $redis
+     * @param Redis|RedisCluster $redis
      * @param string $redisNamespace
      */
-    public function __construct(Redis $redis, string $redisNamespace)
+    public function __construct($redis, string $redisNamespace)
     {
+        $this->validateRedisInstance($redis);
+
         $this->redis = $redis;
         $this->redisNamespace = $redisNamespace;
+    }
+
+    protected function validateRedisInstance($redis)
+    {
+        if (! $redis instanceof Redis && ! $redis instanceof RedisCluster) {
+          throw new \InvalidArgumentException('Redis is not a valid instance.');
+        }
     }
 
     /**
