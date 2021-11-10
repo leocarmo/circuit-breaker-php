@@ -76,5 +76,7 @@ Coverage:
 make test-coverage 
 ```
 
-## Credits
-- [Leonardo Carmo](https://github.com/leocarmo)
+## Contributors
+<a href="https://github.com/leocarmo/circuit-breaker-php/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=leocarmo/circuit-breaker-php&max=10" />
+</a>
