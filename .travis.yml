@@ -13,6 +13,7 @@ services:
 before_install:
   - docker run -d -p 0.0.0.0:6379:6379 --name redis redis:alpine
   - echo "extension=redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - MODULES="swoole.so:swoole inotify.so:inotify" ./.travis/modulecache.sh
 
 before_script:
   - composer install
