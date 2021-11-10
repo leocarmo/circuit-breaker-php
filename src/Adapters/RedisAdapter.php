@@ -30,8 +30,16 @@ class RedisAdapter implements AdapterInterface
      */
     public function __construct(Redis $redis, string $redisNamespace)
     {
+        $this->checkExtensionLoaded();
         $this->redis = $redis;
         $this->redisNamespace = $redisNamespace;
+    }
+
+    protected function checkExtensionLoaded()
+    {
+        if (! extension_loaded('redis')) {
+            throw new \RuntimeException('Extension redis is required to use RedisAdapter.');
+        }
     }
 
     /**
@@ -136,10 +144,6 @@ class RedisAdapter implements AdapterInterface
      */
     protected function makeNamespace(string $service): string
     {
-        if (isset($this->cachedService[$service])) {
-            return $this->cachedService[$service];
-        }
-
-        return $this->cachedService[$service] = 'circuit-breaker:' . $this->redisNamespace . ':' . $service;
+        return 'circuit-breaker:' . $this->redisNamespace . ':' . $service;
     }
 }
