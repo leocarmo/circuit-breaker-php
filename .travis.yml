@@ -13,7 +13,7 @@ services:
 before_install:
   - docker run -d -p 0.0.0.0:6379:6379 --name redis redis:alpine
   - echo "extension=redis.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - pecl install swoole
+  - echo '' | pecl install swoole
   - echo "extension=swoole.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
 
 before_script:
