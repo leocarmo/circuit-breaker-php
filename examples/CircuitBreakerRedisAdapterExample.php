@@ -2,12 +2,13 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 
 use LeoCarmo\CircuitBreaker\CircuitBreaker;
+use LeoCarmo\CircuitBreaker\Adapters\RedisAdapter;
 
 // Connect to redis
 $redis = new \Redis();
 $redis->connect('localhost', 6379);
 
-$adapter = new \LeoCarmo\CircuitBreaker\Adapters\RedisAdapter($redis, 'my-product');
+$adapter = new RedisAdapter($redis, 'my-product');
 
 // Set redis adapter for CB
 $circuit = new CircuitBreaker($adapter, 'my-service');
