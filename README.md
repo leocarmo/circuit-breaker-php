@@ -71,5 +71,19 @@ try {
 }
 ```
 
+## Tests 
+
+```sh 
+make test 
+```
+
+Coverage:
+
+> Requires coverage driver: `pecl install pcov`
+
+```sh 
+make test-coverage 
+```
+
 ## Credits
 - [Leonardo Carmo](https://github.com/leocarmo)

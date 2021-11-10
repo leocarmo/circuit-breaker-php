@@ -1,9 +1,8 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace LeoCarmo\CircuitBreaker\Adapters;
 
 use Redis;
-use LeoCarmo\CircuitBreaker\CircuitBreaker;
 
 class RedisAdapter implements AdapterInterface
 {
@@ -41,20 +40,23 @@ class RedisAdapter implements AdapterInterface
      */
     public function isOpen(string $service): bool
     {
-        return (bool) $this->redis->get($this->makeNamespace($service) . ':open');
+        return (bool) $this->redis->get(
+            $this->makeNamespace($service) . ':open'
+        );
     }
 
     /**
      * @param string $service
+     * @param int $failureRateThreshold
      * @return bool
      */
-    public function reachRateLimit(string $service): bool
+    public function reachRateLimit(string $service, int $failureRateThreshold): bool
     {
         $failures = (int) $this->redis->get(
             $this->makeNamespace($service) . ':failures'
         );
 
-        return ($failures >= CircuitBreaker::getServiceSetting($service, 'failureRateThreshold'));
+        return ($failures >= $failureRateThreshold);
     }
 
     /**
@@ -63,21 +65,24 @@ class RedisAdapter implements AdapterInterface
      */
     public function isHalfOpen(string $service): bool
     {
-        return (bool) $this->redis->get($this->makeNamespace($service) . ':half_open');
+        return (bool) $this->redis->get(
+            $this->makeNamespace($service) . ':half_open'
+        );
     }
 
     /**
      * @param string $service
+     * @param int $timeWindow
      * @return bool
      */
-    public function incrementFailure(string $service) : bool
+    public function incrementFailure(string $service, int $timeWindow) : bool
     {
         $serviceName = $this->makeNamespace($service) . ':failures';
 
         if (! $this->redis->get($serviceName)) {
             $this->redis->multi();
             $this->redis->incr($serviceName);
-            $this->redis->expire($serviceName, CircuitBreaker::getServiceSetting($service, 'timeWindow'));
+            $this->redis->expire($serviceName, $timeWindow);
             return (bool) ($this->redis->exec()[0] ?? false);
         }
 
@@ -100,26 +105,28 @@ class RedisAdapter implements AdapterInterface
 
     /**
      * @param string $service
+     * @param int $timeWindow
      */
-    public function setOpenCircuit(string $service): void
+    public function setOpenCircuit(string $service, int $timeWindow): void
     {
         $this->redis->set(
             $this->makeNamespace($service) . ':open',
             time(),
-            CircuitBreaker::getServiceSetting($service, 'timeWindow')
+            $timeWindow
         );
     }
 
     /**
      * @param string $service
+     * @param int $timeWindow
+     * @param int $intervalToHalfOpen
      */
-    public function setHalfOpenCircuit(string $service): void
+    public function setHalfOpenCircuit(string $service, int $timeWindow, int $intervalToHalfOpen): void
     {
         $this->redis->set(
             $this->makeNamespace($service) . ':half_open',
             time(),
-            CircuitBreaker::getServiceSetting($service, 'timeWindow')
-            + CircuitBreaker::getServiceSetting($service, 'intervalToHalfOpen')
+            ($timeWindow + $intervalToHalfOpen)
         );
     }
 
@@ -133,6 +140,6 @@ class RedisAdapter implements AdapterInterface
             return $this->cachedService[$service];
         }
 
-        return $this->cachedService[$service] = 'circuit-breaker:' . $this->redisNamespace . ':' . base64_encode($service);
+        return $this->cachedService[$service] = 'circuit-breaker:' . $this->redisNamespace . ':' . $service;
     }
 }

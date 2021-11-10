@@ -1,4 +1,4 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace LeoCarmo\CircuitBreaker;
 
@@ -13,22 +13,22 @@ class CircuitBreaker
     /**
      * @var AdapterInterface
      */
-    protected static AdapterInterface $adapter;
+    protected AdapterInterface $adapter;
+
+    /**
+     * @var string
+     */
+    protected string $service;
 
     /**
      * @var array
      */
-    protected static array $servicesSettings;
+    protected array $settings = [];
 
     /**
      * @var array
      */
-    protected static array $globalSettings;
-
-    /**
-     * @var array
-     */
-    protected static array $defaultSettings = [
+    protected array $defaultSettings = [
         'timeWindow' => self::TIME_WINDOW,
         'failureRateThreshold' => self::FAILURE_RATE_THRESHOLD,
         'intervalToHalfOpen' => self::INTERVAL_TO_HALF_OPEN,
@@ -36,19 +36,20 @@ class CircuitBreaker
 
     /**
      * @param AdapterInterface $adapter
-     * @return void
+     * @param string $service
      */
-    public static function setAdapter(AdapterInterface $adapter): void
+    public function __construct(AdapterInterface $adapter, string $service)
     {
-        self::$adapter = $adapter;
+        $this->adapter = $adapter;
+        $this->service = $service;
     }
 
     /**
      * @return AdapterInterface
      */
-    public static function getAdapter(): AdapterInterface
+    public function getAdapter(): AdapterInterface
     {
-        return self::$adapter;
+        return $this->adapter;
     }
 
     /**
@@ -57,65 +58,48 @@ class CircuitBreaker
      * @param array $settings
      * @return void
      */
-    public static function setGlobalSettings(array $settings): void
+    public function setSettings(array $settings): void
     {
-        foreach (self::$defaultSettings as $defaultSettingKey => $defaultSettingValue) {
-            self::$globalSettings[$defaultSettingKey] = (int) ($settings[$defaultSettingKey] ?? $defaultSettingValue);
+        foreach ($this->defaultSettings as $defaultSettingKey => $defaultSettingValue) {
+            $this->settings[$defaultSettingKey] = (int) ($settings[$defaultSettingKey] ?? $defaultSettingValue);
         }
     }
 
     /**
      * @return array
      */
-    public static function getGlobalSettings(): array
+    public function getSettings(): array
     {
-        return self::$globalSettings;
+        return $this->settings;
     }
 
     /**
-     * Set custom settings for each service
-     *
-     * @param string $service
-     * @param array $settings
-     * @return void
-     */
-    public static function setServiceSettings(string $service, array $settings) : void
-    {
-        foreach (self::$defaultSettings as $defaultSettingKey => $defaultSettingValue) {
-            self::$servicesSettings[$service][$defaultSettingKey] =
-                (int) ($settings[$defaultSettingKey] ?? self::$globalSettings[$defaultSettingKey] ?? $defaultSettingValue);
-        }
-    }
-
-    /**
-     * Get setting for a service, if not set, get from default settings
-     *
-     * @param string $service
-     * @param string $setting
+     * @param string $name
      * @return mixed
      */
-    public static function getServiceSetting(string $service, string $setting)
+    public function getSetting(string $name)
     {
-        return self::$servicesSettings[$service][$setting]
-            ?? self::$globalSettings[$setting]
-            ?? self::$defaultSettings[$setting];
+        return $this->settings[$name] ?? $this->defaultSettings[$name];
     }
 
     /**
      * Check if circuit is available (closed)
      *
-     * @param string $service
      * @return bool
      */
-    public static function isAvailable(string $service): bool
+    public function isAvailable(): bool
     {
-        if (self::$adapter->isOpen($service)) {
+        if ($this->adapter->isOpen($this->service)) {
             return false;
         }
 
-        if (self::$adapter->reachRateLimit($service)) {
-            self::$adapter->setOpenCircuit($service);
-            self::$adapter->setHalfOpenCircuit($service);
+        $reachRateLimit = $this->adapter->reachRateLimit(
+            $this->service,
+            $this->getSetting('failureRateThreshold')
+        );
+
+        if ($reachRateLimit) {
+            $this->openCircuit();
             return false;
         }
 
@@ -125,28 +109,46 @@ class CircuitBreaker
     /**
      * Set new failure for a service
      *
-     * @param string $service
-     * @return bool
+     * @return void
      */
-    public static function failure(string $service): bool
+    public function failure(): void
     {
-        if (self::$adapter->isHalfOpen($service)) {
-            self::$adapter->setOpenCircuit($service);
-            self::$adapter->setHalfOpenCircuit($service);
-            return false;
+        $isHalfOpen = $this->adapter->isHalfOpen($this->service);
+
+        if ($isHalfOpen) {
+            $this->openCircuit();
+            return;
         }
 
-        return self::$adapter->incrementFailure($service);
+        $this->adapter->incrementFailure(
+            $this->service,
+            $this->getSetting('timeWindow')
+        );
     }
 
     /**
      * Record success and clear all status
      *
-     * @param string $service
      * @return void
      */
-    public static function success(string $service)
+    public function success(): void
     {
-        self::$adapter->setSuccess($service);
+        $this->adapter->setSuccess($this->service);
+    }
+
+    /**
+     * Open circuit
+     */
+    public function openCircuit(): void
+    {
+        $this->adapter->setOpenCircuit(
+            $this->service,
+            $this->getSetting('timeWindow')
+        );
+        $this->adapter->setHalfOpenCircuit(
+            $this->service,
+            $this->getSetting('timeWindow'),
+            $this->getSetting('intervalToHalfOpen')
+        );
     }
 }

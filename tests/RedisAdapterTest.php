@@ -1,73 +1,96 @@
-<?php
+<?php declare(strict_types=1);
 
 use LeoCarmo\CircuitBreaker\CircuitBreaker;
 use LeoCarmo\CircuitBreaker\Adapters\RedisAdapter;
+use PHPUnit\Framework\TestCase;
 
-class RedisAdapterTest extends \PHPUnit\Framework\TestCase
+class RedisAdapterTest extends TestCase
 {
-
-    public function testSetAdapter()
+    protected function createRedisAdapter()
     {
         $redis = new \Redis();
         $redis->connect('0.0.0.0', 6379);
+        return new RedisAdapter($redis, 'my-product');
+    }
 
-        $redis = new RedisAdapter($redis, 'my-product');
+    public function testSetAdapter()
+    {
+        $redis = $this->createRedisAdapter();
 
-        CircuitBreaker::setAdapter($redis);
+        $circuitBreaker = new CircuitBreaker($redis, 'testSetAdapter');
 
-        $this->assertInstanceOf(RedisAdapter::class, CircuitBreaker::getAdapter());
+        $this->assertInstanceOf(RedisAdapter::class, $circuitBreaker->getAdapter());
     }
 
     public function testOpenCircuit()
     {
-        $service = 'my-service';
+        $redis = $this->createRedisAdapter();
 
-        CircuitBreaker::setServiceSettings($service, [
+        $circuitBreaker = new CircuitBreaker($redis, 'testOpenCircuit');
+
+        $circuitBreaker->setSettings([
             'timeWindow' => 20,
             'failureRateThreshold' => 5,
             'intervalToHalfOpen' => 10,
         ]);
 
-        CircuitBreaker::failure($service);
-        CircuitBreaker::failure($service);
-        CircuitBreaker::failure($service);
-        CircuitBreaker::failure($service);
-        CircuitBreaker::failure($service);
+        $circuitBreaker->failure();
+        $circuitBreaker->failure();
+        $circuitBreaker->failure();
+        $circuitBreaker->failure();
+        $circuitBreaker->failure();
 
-        $this->assertFalse(CircuitBreaker::isAvailable($service));
+        $this->assertFalse($circuitBreaker->isAvailable());
     }
 
     public function testCloseCircuitSuccess()
     {
-        CircuitBreaker::success('my-service');
+        $redis = $this->createRedisAdapter();
 
-        $this->assertTrue(CircuitBreaker::isAvailable('my-service'));
+        $circuitBreaker = new CircuitBreaker($redis, 'testCloseCircuitSuccess');
+
+        $circuitBreaker->setSettings([
+            'timeWindow' => 20,
+            'failureRateThreshold' => 1,
+            'intervalToHalfOpen' => 10,
+        ]);
+
+        $circuitBreaker->failure();
+        $circuitBreaker->failure();
+
+        $this->assertFalse($circuitBreaker->isAvailable());
+
+        $circuitBreaker->success();
+
+        $this->assertTrue($circuitBreaker->isAvailable());
     }
 
     public function testHalfOpenFailAndOpenCircuit()
     {
-        $service = 'my-service-2';
+        $redis = $this->createRedisAdapter();
 
-        CircuitBreaker::setServiceSettings($service, [
+        $circuitBreaker = new CircuitBreaker($redis, 'testHalfOpenFailAndOpenCircuit');
+
+        $circuitBreaker->setSettings([
             'timeWindow' => 1,
             'failureRateThreshold' => 3,
             'intervalToHalfOpen' => 15,
         ]);
 
-        CircuitBreaker::failure($service);
-        CircuitBreaker::failure($service);
-        CircuitBreaker::failure($service);
+        $circuitBreaker->failure();
+        $circuitBreaker->failure();
+        $circuitBreaker->failure();
 
         // Check if is available for open circuit
-        $this->assertFalse(CircuitBreaker::isAvailable($service));
+        $this->assertFalse($circuitBreaker->isAvailable());
 
         // Sleep for half open
         sleep(2);
 
         // Register new failure
-        CircuitBreaker::failure($service);
+        $circuitBreaker->failure();
 
         // Check if is open
-        $this->assertFalse(CircuitBreaker::isAvailable($service));
+        $this->assertFalse($circuitBreaker->isAvailable());
     }
 }

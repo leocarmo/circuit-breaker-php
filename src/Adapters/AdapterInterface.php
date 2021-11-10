@@ -7,15 +7,15 @@ interface AdapterInterface
 
     public function isOpen(string $service): bool;
 
-    public function reachRateLimit(string $service): bool;
-    
-    public function setOpenCircuit(string $service): void;
+    public function reachRateLimit(string $service, int $failureRateThreshold): bool;
 
-    public function setHalfOpenCircuit(string $service): void;
+    public function setOpenCircuit(string $service, int $timeWindow): void;
+
+    public function setHalfOpenCircuit(string $service, int $timeWindow, int $intervalToHalfOpen): void;
 
     public function isHalfOpen(string $service): bool;
 
-    public function incrementFailure(string $service): bool;
+    public function incrementFailure(string $service, int $timeWindow) : bool;
 
     public function setSuccess(string $service): void;
 
