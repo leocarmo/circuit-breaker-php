@@ -12,7 +12,12 @@ For more information about this pattern see [this](https://martinfowler.com/blik
 composer require leocarmo/circuit-breaker-php
 ```
 
-## Redis adapter
+## Adapters
+
+- [Redis](#redis-adapter) 
+- [Swoole Table](#swooletable-adapter)
+
+### Redis Adapter
 The first argument is a redis connection, the second is your product name, for redis namespace avoid key conflicts with another product using the same redis.
 
 ```php
@@ -31,7 +36,7 @@ $circuit = new CircuitBreaker($adapter, 'my-service');
 
 > See [this](examples/RedisAdapterExample.php) for full example
 
-## SwooleTable Adapter
+### SwooleTable Adapter
 
 ```php
 use LeoCarmo\CircuitBreaker\CircuitBreaker;
