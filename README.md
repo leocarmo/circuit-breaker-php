@@ -5,12 +5,12 @@
 [![Code Intelligence Status](https://scrutinizer-ci.com/g/leocarmo/circuit-breaker-php/badges/code-intelligence.svg?b=master)](https://scrutinizer-ci.com/code-intelligence)
 [![Total Downloads](https://img.shields.io/packagist/dt/leocarmo/circuit-breaker-php.svg)](https://packagist.org/packages/leocarmo/circuit-breaker-php)
 
-For more information about this pattern see [this](https://martinfowler.com/bliki/CircuitBreaker.html).  
-  
-> This implementation has only redis adapter yet
+For more information about this pattern see [this](https://martinfowler.com/bliki/CircuitBreaker.html).
 
 ## Starting with composer
-`composer require leocarmo/circuit-breaker-php`
+```sh
+composer require leocarmo/circuit-breaker-php
+```
 
 ## Redis adapter
 The first argument is a redis connection, the second is your product name, for redis namespace avoid key conflicts with another product using the same redis.
@@ -29,10 +29,39 @@ $adapter = new RedisAdapter($redis, 'my-product');
 $circuit = new CircuitBreaker($adapter, 'my-service');
 ```
 
+> See [this](examples/RedisAdapterExample.php) for full example
+
+## SwooleTable Adapter
+
+```php
+use LeoCarmo\CircuitBreaker\CircuitBreaker;
+
+$circuit = new CircuitBreaker(new SwooleTableAdapter(), 'my-service');
+```
+
+## Guzzle Middleware
+
+```php
+use GuzzleHttp\Client;
+use GuzzleHttp\HandlerStack;
+use LeoCarmo\CircuitBreaker\GuzzleMiddleware;
+
+$handler = new GuzzleMiddleware($circuit);
+
+$handlers = HandlerStack::create();
+$handlers->push($handler);
+
+$client = new Client(['handler' => $handlers]);
+
+$response = $client->get('leocarmo.dev');
+```
+
+> See [this](examples/GuzzleMiddlewareExample.php) for full example
+
+
 ## Set circuit break settings
 > This is not required, default values will be set
 ```php
-// Configure settings for CB
 $circuit->setSettings([
     'timeWindow' => 60, // Time for an open circuit (seconds)
     'failureRateThreshold' => 50, // Fail rate for open the circuit

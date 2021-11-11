@@ -53,6 +53,14 @@ class CircuitBreaker
     }
 
     /**
+     * @return string
+     */
+    public function getService(): string
+    {
+        return $this->service;
+    }
+
+    /**
      * Set global settings for all services
      *
      * @param array $settings
