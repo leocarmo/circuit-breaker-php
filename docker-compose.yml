@@ -18,17 +18,7 @@ services:
       - REDIS_HOST=circuit-breaker-php.redis
     volumes:
       - ./:/app
-    networks:
-      - global-default
 
   redis:
     image: redis:alpine
     container_name: circuit-breaker-php.redis
-    ports:
-      - "6379:6379"
-    networks:
-      - global-default
-
-networks:
-  global-default:
-    external: true
