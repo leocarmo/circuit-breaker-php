@@ -51,6 +51,7 @@ class GuzzleMiddleware
 
         if ($this->isStatusCodeSuccess($statusCode)) {
             $this->circuitBreaker->success();
+            return;
         }
 
         $this->circuitBreaker->failure();

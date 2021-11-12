@@ -6,12 +6,6 @@ use PHPUnit\Framework\TestCase;
 
 class CircuitBreakerTest extends TestCase
 {
-    protected function createCircuitBreaker(): CircuitBreaker
-    {
-        $adapter = $this->createMock(AdapterInterface::class);
-        return new CircuitBreaker($adapter, 'service');
-    }
-
     public function testGetAdapter()
     {
         $expected = $this->createMock(AdapterInterface::class);
@@ -27,7 +21,8 @@ class CircuitBreakerTest extends TestCase
     {
         $settings = ['timeWindow' => 10];
 
-        $circuitBreaker = $this->createCircuitBreaker();
+        $adapter = $this->createMock(AdapterInterface::class);
+        $circuitBreaker = new CircuitBreaker($adapter, 'service');
 
         $circuitBreaker->setSettings($settings);
 
