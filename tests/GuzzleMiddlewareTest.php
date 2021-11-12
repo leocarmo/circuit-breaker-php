@@ -22,7 +22,7 @@ class GuzzleMiddlewareTest extends TestCase
         $handlers = HandlerStack::create();
         $handlers->push($handler);
 
-        $client = new Client(['handler' => $handlers]);
+        $client = new Client(['handler' => $handlers, 'verify' => false]);
         $response = $client->get('leocarmo.dev');
 
         // After a success response the failures must be reset and the circuit is available
@@ -46,7 +46,7 @@ class GuzzleMiddlewareTest extends TestCase
         $handlers = HandlerStack::create();
         $handlers->push($handler);
 
-        $client = new Client(['handler' => $handlers]);
+        $client = new Client(['handler' => $handlers, 'verify' => false]);
 
         $this->expectException(CircuitBreakerException::class);
 
@@ -64,7 +64,7 @@ class GuzzleMiddlewareTest extends TestCase
         $handlers = HandlerStack::create();
         $handlers->push($handler);
 
-        $client = new Client(['handler' => $handlers]);
+        $client = new Client(['handler' => $handlers, 'verify' => false]);
 
         $this->expectException(\GuzzleHttp\Exception\ClientException::class);
 

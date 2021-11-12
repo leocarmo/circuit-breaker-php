@@ -11,7 +11,7 @@ class AdaptersTest extends TestCase
     public function testCreateRedisAdapter()
     {
         $redis = new \Redis();
-        $redis->connect('0.0.0.0', 6379);
+        $redis->connect(getenv('REDIS_HOST'));
         $adapter = new RedisAdapter($redis, 'my-product');
 
         $this->assertInstanceOf(AdapterInterface::class, $adapter);

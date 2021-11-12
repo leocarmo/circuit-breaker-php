@@ -96,18 +96,17 @@ try {
 }
 ```
 
-## Tests 
+## Development
+
+### Setup
+```shell
+make setup
+```
+
+### Tests
 
 ```sh 
 make test 
-```
-
-Coverage:
-
-> Requires coverage driver: `pecl install pcov`
-
-```sh 
-make test-coverage 
 ```
 
 ## Contributors

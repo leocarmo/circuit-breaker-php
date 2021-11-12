@@ -29,5 +29,8 @@
     "symfony/var-dumper": "^5.2",
     "swoole/ide-helper": "dev-master",
     "guzzlehttp/guzzle": "^7.0"
+  },
+  "scripts": {
+    "test": "phpunit --testdox --coverage-text tests "
   }
 }
