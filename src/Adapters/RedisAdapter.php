@@ -2,15 +2,12 @@
 
 namespace LeoCarmo\CircuitBreaker\Adapters;
 
-use Redis;
-
 class RedisAdapter implements AdapterInterface
 {
-
     /**
-     * @var Redis
+     * @var \Redis
      */
-    protected Redis $redis;
+    protected $redis;
 
     /**
      * @var string
@@ -18,17 +15,12 @@ class RedisAdapter implements AdapterInterface
     protected string $redisNamespace;
 
     /**
-     * @var array
-     */
-    protected array $cachedService = [];
-
-    /**
      * Set settings for start circuit service
      *
-     * @param Redis $redis
+     * @param $redis
      * @param string $redisNamespace
      */
-    public function __construct(Redis $redis, string $redisNamespace)
+    public function __construct($redis, string $redisNamespace)
     {
         $this->checkExtensionLoaded();
         $this->redis = $redis;
