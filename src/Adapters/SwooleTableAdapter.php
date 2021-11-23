@@ -18,7 +18,7 @@ class SwooleTableAdapter implements AdapterInterface
     {
         $table = new Table(12);
         $table->column('count', Table::TYPE_INT, 4);
-        $table->column('until_date', Table::TYPE_FLOAT);
+        $table->column('until_date', Table::TYPE_INT, 4);
         $table->create();
         return $table;
     }
@@ -61,7 +61,7 @@ class SwooleTableAdapter implements AdapterInterface
 
         $failures = $this->table->get($key);
 
-        if (microtime(true) > $failures['until_date']) {
+        if ((new \DateTime('now'))->getTimestamp() > $failures['until_date']) {
             $this->table->delete("{$service}-failures");
             return false;
         }
@@ -93,7 +93,9 @@ class SwooleTableAdapter implements AdapterInterface
 
         $open = $this->table->get($key, 'until_date');
 
-        return (microtime(true) < $open);
+        return (
+            (new \DateTime('now'))->getTimestamp() < $open
+        );
     }
 
     /**
@@ -110,7 +112,9 @@ class SwooleTableAdapter implements AdapterInterface
 
         $halfOpen = $this->table->get($key, 'until_date');
 
-        return (microtime(true) < $halfOpen);
+        return (
+            (new \DateTime('now'))->getTimestamp() < $halfOpen
+        );
     }
 
     /**
