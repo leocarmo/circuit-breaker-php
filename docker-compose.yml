@@ -1,8 +1,24 @@
 version: '3'
 
 services:
+  image:
+    container_name: circuit-breaker-php.image
+    image: circuit-breaker-php
+    command: list
+    build: .
+
+  composer:
+    container_name: circuit-breaker-php.composer
+    image: circuit-breaker-php
+    depends_on:
+      - image
+      - redis
+    entrypoint: composer
+    environment:
+      - REDIS_HOST=circuit-breaker-php.redis
+    volumes:
+      - ./:/app
+
   redis:
     image: redis:alpine
-    container_name: redis
-    ports:
-      - 6379:6379
+    container_name: circuit-breaker-php.redis

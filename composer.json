@@ -16,11 +16,21 @@
   },
   "require": {
     "php": "^7.4 || ^8.0",
-    "ext-redis": "*"
+    "psr/http-message": "^1.0"
+  },
+  "suggest": {
+    "ext-swoole": "Required to use Swoole Table Adapter.",
+    "ext-redis": "Required to use Redis Adapter.",
+    "guzzlehttp/guzzle": "Allows the usage of the GuzzleMiddleware"
   },
   "require-dev": {
     "phpunit/phpunit": "^9",
     "phpunit/php-code-coverage": "^9.2",
-    "symfony/var-dumper": "^5.2"
+    "symfony/var-dumper": "^5.2",
+    "swoole/ide-helper": "dev-master",
+    "guzzlehttp/guzzle": "^7.0"
+  },
+  "scripts": {
+    "test": "phpunit --testdox --coverage-text tests "
   }
 }

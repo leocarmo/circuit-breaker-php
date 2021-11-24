@@ -1,7 +1,9 @@
 test:
 	@echo "---- Running tests ----"
-	@./vendor/bin/phpunit --testdox tests
+	@docker-compose up -d redis
+	@docker-compose run --rm composer test
+	@docker-compose down
 
-test-coverage:
-	@echo "---- Running tests with coverage report ----"
-	@./vendor/bin/phpunit --coverage-text
+setup:
+	@docker-compose build image
+	@docker-compose run --rm composer install
