@@ -130,6 +130,15 @@ class RedisAdapter implements AdapterInterface
         );
     }
 
+    public function getFailuresCounter(string $service): int
+    {
+        $failures = $this->redis->get(
+            $this->makeNamespace($service) . ':failures'
+        );
+
+        return (int) $failures;
+    }
+
     /**
      * @param string $service
      * @return string

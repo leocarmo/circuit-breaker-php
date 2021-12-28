@@ -31,6 +31,6 @@
     "guzzlehttp/guzzle": "^7.0"
   },
   "scripts": {
-    "test": "phpunit --testdox --coverage-text tests "
+    "test": "phpunit --testdox tests "
   }
 }

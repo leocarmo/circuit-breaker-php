@@ -63,6 +63,19 @@ $response = $client->get('leocarmo.dev');
 
 > See [this](examples/GuzzleMiddlewareExample.php) for full example
 
+### Customize success status code 
+
+If you need to specify a custom status code that is not a failure, you can use:
+
+```php
+$handler = new GuzzleMiddleware($circuit);
+$handler->setCustomSuccessCodes([400]);
+```
+
+*Important:* this configuration will record a success when a status code `400` is returned
+
+> See [this](examples/GuzzleMiddlewareCustomCodeExample.php) for full example
+
 
 ## Set circuit break settings
 > This is not required, default values will be set

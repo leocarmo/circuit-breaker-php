@@ -9,9 +9,16 @@ class GuzzleMiddleware
 {
     protected CircuitBreaker $circuitBreaker;
 
+    protected array $customSuccessCodes = [];
+
     public function __construct(CircuitBreaker $circuitBreaker)
     {
         $this->circuitBreaker = $circuitBreaker;
+    }
+
+    public function setCustomSuccessCodes(array $codes): void
+    {
+        $this->customSuccessCodes = $codes;
     }
 
     public function __invoke(callable $handler): \Closure
@@ -31,6 +38,10 @@ class GuzzleMiddleware
                     $this->executeCircuitBreakerOnResponse($response);
 
                     return $response;
+                },
+                function (\Throwable $exception) {
+                    $this->circuitBreaker->failure();
+                    throw $exception;
                 }
             );
         };
@@ -49,7 +60,7 @@ class GuzzleMiddleware
             return;
         }
 
-        if ($this->isStatusCodeSuccess($statusCode)) {
+        if ($this->isStatusCodeSuccess($statusCode) || in_array($statusCode, $this->customSuccessCodes)) {
             $this->circuitBreaker->success();
             return;
         }

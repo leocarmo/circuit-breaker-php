@@ -19,4 +19,6 @@ interface AdapterInterface
 
     public function setSuccess(string $service): void;
 
+    public function getFailuresCounter(string $service): int;
+
 }

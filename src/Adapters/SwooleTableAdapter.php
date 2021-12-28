@@ -155,4 +155,11 @@ class SwooleTableAdapter implements AdapterInterface
 
         $this->table->delete("{$service}-failures");
     }
+
+    public function getFailuresCounter(string $service): int
+    {
+        $failures = $this->table->get("{$service}-failures");
+
+        return (int) ($failures['count'] ?? 0);
+    }
 }
