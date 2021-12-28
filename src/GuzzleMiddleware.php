@@ -11,6 +11,8 @@ class GuzzleMiddleware
 
     protected array $customSuccessCodes = [];
 
+    protected array $customIgnoreCodes = [];
+
     public function __construct(CircuitBreaker $circuitBreaker)
     {
         $this->circuitBreaker = $circuitBreaker;
@@ -19,6 +21,11 @@ class GuzzleMiddleware
     public function setCustomSuccessCodes(array $codes): void
     {
         $this->customSuccessCodes = $codes;
+    }
+
+    public function setCustomIgnoreCodes(array $codes): void
+    {
+        $this->customIgnoreCodes = $codes;
     }
 
     public function __invoke(callable $handler): \Closure
@@ -50,6 +57,10 @@ class GuzzleMiddleware
     protected function executeCircuitBreakerOnResponse(ResponseInterface $response): void
     {
         $statusCode = $response->getStatusCode();
+
+        if (in_array($statusCode, $this->customIgnoreCodes)) {
+            return;
+        }
 
         if (! $this->isStatusCodeRangeValid($statusCode)) {
             $this->circuitBreaker->failure();

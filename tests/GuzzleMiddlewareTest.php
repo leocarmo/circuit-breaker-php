@@ -63,6 +63,30 @@ class GuzzleMiddlewareTest extends TestCase
         $this->assertTrue($circuit->isAvailable());
     }
 
+    public function testRequestWithIgnoredStatusCode()
+    {
+        $circuit = new CircuitBreaker(new SwooleTableAdapter(), 'testRequestWithCustomStatusCode');
+
+        // Set the first failure and the failure threshold
+        $circuit->setSettings(['failureRateThreshold' => 2]);
+        $circuit->failure();
+
+        $handler = new GuzzleMiddleware($circuit);
+        $handler->setCustomIgnoreCodes([412]);
+
+        $handlers = HandlerStack::create();
+        $handlers->push($handler);
+
+        $client = new Client(['handler' => $handlers, 'verify' => false, 'http_errors' => false]);
+
+        // After an ignored status code, nothing will change on failure counter
+        $this->assertEquals(1, $circuit->getFailuresCounter());
+        $response = $client->get('https://httpstat.us/412');
+        $this->assertEquals(412, $response->getStatusCode());
+        $this->assertEquals(1, $circuit->getFailuresCounter());
+        $this->assertTrue($circuit->isAvailable());
+    }
+
     public function testCircuitIsNotAvailable()
     {
         $circuit = new CircuitBreaker(new SwooleTableAdapter(), 'testCircuitIsNotAvailable');
