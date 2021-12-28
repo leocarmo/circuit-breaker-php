@@ -3,7 +3,6 @@ language: php
 php:
   - '7.4'
   - '8.0'
-  - '8.1'
 
 env:
   - REDIS_HOST=0.0.0.0 REDIS_PORT=6379 XDEBUG_MODE=coverage
