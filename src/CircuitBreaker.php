@@ -159,4 +159,9 @@ class CircuitBreaker
             $this->getSetting('intervalToHalfOpen')
         );
     }
+
+    public function getFailuresCounter(): int
+    {
+        return $this->adapter->getFailuresCounter($this->service);
+    }
 }

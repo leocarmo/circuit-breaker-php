@@ -61,8 +61,31 @@ $client = new Client(['handler' => $handlers]);
 $response = $client->get('leocarmo.dev');
 ```
 
+*Important*: all status code between 200 and 299 will be recorded as a success, and other status will be recorded as a failure.
+
 > See [this](examples/GuzzleMiddlewareExample.php) for full example
 
+### Customize success status code 
+
+If you need to specify a custom status code that is not a failure, you can use:
+
+```php
+$handler = new GuzzleMiddleware($circuit);
+$handler->setCustomSuccessCodes([400]);
+```
+
+*Important:* this configuration will record a success when a status code `400` is returned
+
+> See [this](examples/GuzzleMiddlewareCustomCodeExample.php) for full example
+
+### Ignore status code
+
+If you want to ignore the status code returned and not record a success or failure, use this:
+
+```php
+$handler = new GuzzleMiddleware($circuit);
+$handler->setCustomIgnoreCodes([412]);
+```
 
 ## Set circuit break settings
 > This is not required, default values will be set
