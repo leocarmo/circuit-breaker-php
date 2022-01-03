@@ -21,7 +21,8 @@ $circuit->failure();
 echo "Errors counter: " . $circuit->getFailuresCounter() . PHP_EOL;
 
 $handler = new GuzzleMiddleware($circuit);
-$handler->setCustomSuccessCodes([403]);
+$handler->setCustomSuccessCodes([502]);
+$handler->setCustomSuccessFamily(403);
 
 $handlers = HandlerStack::create();
 $handlers->push($handler);

@@ -74,6 +74,12 @@ $handler = new GuzzleMiddleware($circuit);
 $handler->setCustomSuccessCodes([400]);
 ```
 
+Or set a complete family to not failure, you can use:
+```php
+$handler = new GuzzleMiddleware($circuit);
+$handler->setCustomSuccessFamily(400);
+```
+
 *Important:* this configuration will record a success when a status code `400` is returned
 
 > See [this](examples/GuzzleMiddlewareCustomCodeExample.php) for full example
@@ -85,6 +91,12 @@ If you want to ignore the status code returned and not record a success or failu
 ```php
 $handler = new GuzzleMiddleware($circuit);
 $handler->setCustomIgnoreCodes([412]);
+```
+
+Or set a complete family, you can use:
+```php
+$handler = new GuzzleMiddleware($circuit);
+$handler->setCustomIgnoreFamily(400);
 ```
 
 ## Set circuit break settings

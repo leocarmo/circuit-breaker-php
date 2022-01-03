@@ -7,20 +7,53 @@ use Psr\Http\Message\ResponseInterface;
 
 class GuzzleMiddleware
 {
+    private const DEFAULT_SUCCESS_FAMILY = 200;
+
+    private const DEFAULT_IGNORE_FAMILY = 300;
+
     protected CircuitBreaker $circuitBreaker;
 
     protected array $customSuccessCodes = [];
 
     protected array $customIgnoreCodes = [];
 
+    protected array $customSuccessFamily = [];
+
+    protected array $customIgnoreFamily = [];
+
     public function __construct(CircuitBreaker $circuitBreaker)
     {
         $this->circuitBreaker = $circuitBreaker;
+        $this->setCustomSuccessFamily(self::DEFAULT_SUCCESS_FAMILY);
+        $this->setCustomIgnoreFamily(self::DEFAULT_IGNORE_FAMILY);
     }
 
     public function setCustomSuccessCodes(array $codes): void
     {
         $this->customSuccessCodes = $codes;
+    }
+
+    private function validateCodeStatusFamily(int $family): void
+    {
+        $num_length = strlen((string) $family);
+        $initial_number = substr((string) $family, 0, 1);
+        if (($num_length !== 3) && ($initial_number > 0 && $initial_number < 6)) {
+            throw new \InvalidArgumentException('This code status family is not valid.');
+        }
+    }
+
+    public function setCustomSuccessFamily(int $family): void
+    {
+        $this->validateCodeStatusFamily($family);
+        $initial_number = substr((string) $family, 0, 1);
+        $this->customSuccessFamily[] = $initial_number;
+    }
+
+    public function setCustomIgnoreFamily(int $family): void
+    {
+        $this->validateCodeStatusFamily($family);
+        $initial_number = substr((string) $family, 0, 1);
+        $this->customIgnoreFamily[] = $initial_number;
     }
 
     public function setCustomIgnoreCodes(array $codes): void
@@ -58,7 +91,7 @@ class GuzzleMiddleware
     {
         $statusCode = $response->getStatusCode();
 
-        if (in_array($statusCode, $this->customIgnoreCodes)) {
+        if ($this->isIgnoredStatus($statusCode)) {
             return;
         }
 
@@ -67,11 +100,7 @@ class GuzzleMiddleware
             return;
         }
 
-        if ($this->isStatusCodeRedirect($statusCode)) {
-            return;
-        }
-
-        if ($this->isStatusCodeSuccess($statusCode) || in_array($statusCode, $this->customSuccessCodes)) {
+        if ($this->isStatusCodeSuccess($statusCode)) {
             $this->circuitBreaker->success();
             return;
         }
@@ -79,18 +108,30 @@ class GuzzleMiddleware
         $this->circuitBreaker->failure();
     }
 
+    protected function isStatusCodeFamilyToIgnore(int $statusCode): bool
+    {
+        $initial_number = substr((string) $statusCode, 0, 1);
+        return (in_array($initial_number, $this->customIgnoreFamily));
+    }
+
+    protected  function isIgnoredStatus(int $statusCode): bool
+    {
+        return $this->isStatusCodeFamilyToIgnore($statusCode) || in_array($statusCode, $this->customIgnoreCodes);
+    }
+
     protected function isStatusCodeRangeValid(int $statusCode): bool
     {
         return ($statusCode >= 100 && $statusCode < 600);
     }
 
-    protected function isStatusCodeRedirect(int $statusCode): bool
+    protected function isStatusCodeFamilyToSuccess(int $statusCode): bool
     {
-        return ($statusCode >= 300 && $statusCode < 400);
+        $initial_number = substr((string) $statusCode, 0, 1);
+        return (in_array($initial_number, $this->customSuccessFamily));
     }
 
     protected function isStatusCodeSuccess(int $statusCode): bool
     {
-        return ($statusCode >= 200 && $statusCode < 300);
+        return ($this->isStatusCodeFamilyToSuccess($statusCode) || in_array($statusCode, $this->customSuccessCodes));
     }
 }

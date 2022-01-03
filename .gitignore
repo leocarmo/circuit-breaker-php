@@ -8,3 +8,4 @@
 composer.lock
 .env
 *.cache
+/tests/reports
