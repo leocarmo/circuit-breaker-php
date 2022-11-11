@@ -80,7 +80,8 @@ class RedisClusterAdapter implements AdapterInterface
         $serviceName = $this->makeNamespace($service) . ':failures';
 
         if (! $this->redis->get($serviceName)) {
-            return (bool) ($this->redis->incr($serviceName) && $this->redis->expire($serviceName, $timeWindow));
+            $this->redis->incr($serviceName);
+            return (bool) $this->redis->expire($serviceName, $timeWindow);
         }
 
         return (bool) $this->redis->incr($serviceName);
