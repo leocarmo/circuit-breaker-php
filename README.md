@@ -15,6 +15,7 @@ composer require leocarmo/circuit-breaker-php
 ## Adapters
 
 - [Redis](#redis-adapter) 
+- [Redis Cluster](#redis-cluster-adapter) 
 - [Swoole Table](#swooletable-adapter)
 
 ### Redis Adapter
@@ -35,6 +36,26 @@ $circuit = new CircuitBreaker($adapter, 'my-service');
 ```
 
 > See [this](examples/RedisAdapterExample.php) for full example
+
+### Redis Cluster Adapter
+Without use of [`multi`](https://redis.io/commands/multi/) command.
+The first argument is a redis connection, the second is your product name, for redis namespace avoid key conflicts with another product using the same redis.
+
+```php
+use LeoCarmo\CircuitBreaker\CircuitBreaker;
+use LeoCarmo\CircuitBreaker\Adapters\RedisClusterAdapter;
+
+// Connect to redis
+$redis = new \Redis();
+$redis->connect('localhost', 6379);
+
+$adapter = new RedisClusterAdapter($redis, 'my-product');
+
+// Set redis adapter for CB
+$circuit = new CircuitBreaker($adapter, 'my-service');
+```
+
+> See [this](examples/RedisClusterAdapterExample.php) for full example
 
 ### SwooleTable Adapter
 

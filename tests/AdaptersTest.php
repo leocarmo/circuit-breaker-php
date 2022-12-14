@@ -1,6 +1,7 @@
 <?php declare(strict_types=1);
 
 use LeoCarmo\CircuitBreaker\Adapters\AdapterInterface;
+use LeoCarmo\CircuitBreaker\Adapters\RedisClusterAdapter;
 use LeoCarmo\CircuitBreaker\Adapters\SwooleTableAdapter;
 use LeoCarmo\CircuitBreaker\CircuitBreaker;
 use LeoCarmo\CircuitBreaker\Adapters\RedisAdapter;
@@ -19,6 +20,17 @@ class AdaptersTest extends TestCase
         return $adapter;
     }
 
+    public function testCreateRedisClusterAdapter()
+    {
+        $redis = new \Redis();
+        $redis->connect(getenv('REDIS_HOST'));
+        $adapter = new RedisClusterAdapter($redis, 'my-product');
+
+        $this->assertInstanceOf(AdapterInterface::class, $adapter);
+
+        return $adapter;
+    }
+
     public function testCreateSwooleTableAdapter()
     {
         $adapter = new SwooleTableAdapter();
@@ -30,6 +42,7 @@ class AdaptersTest extends TestCase
     {
         return [
             'redis' => [$this->testCreateRedisAdapter()],
+            'redis-cluster' => [$this->testCreateRedisClusterAdapter()],
             'swoole-table' => [$this->testCreateSwooleTableAdapter()],
         ];
     }
