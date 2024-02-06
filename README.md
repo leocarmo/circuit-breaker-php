@@ -108,6 +108,10 @@ $handler = new GuzzleMiddleware($circuit);
 $handler->setCustomIgnoreCodes([412]);
 ```
 
+> [!IMPORTANT]  
+> To use `Customize success status code` or `Ignore status code` you must set the [Guzzle client config `http_errors = false`](https://docs.guzzlephp.org/en/stable/request-options.html#http-errors) because the Guzzle Client throws a `ClientException` or `ServerException` when the status code is not in range `>200 && <300`.
+
+
 ## Set circuit break settings
 > This is not required, default values will be set
 ```php
