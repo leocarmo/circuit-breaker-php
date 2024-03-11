@@ -1,9 +1,12 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace LeoCarmo\CircuitBreaker;
 
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
+use GuzzleHttp\Exception\RequestException;
 
 class GuzzleMiddleware
 {
@@ -45,6 +48,11 @@ class GuzzleMiddleware
                     $this->executeCircuitBreakerOnResponse($response);
 
                     return $response;
+                },
+                function (RequestException $exception) {
+                    $this->executeCircuitBreakerOnResponse($exception->getResponse());
+
+                    throw $exception;
                 },
                 function (\Throwable $exception) {
                     $this->circuitBreaker->failure();
