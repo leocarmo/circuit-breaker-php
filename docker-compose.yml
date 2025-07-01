@@ -21,8 +21,16 @@ services:
     image: redis:alpine
     container_name: circuit-breaker-php.redis
 
+  redisinsight:
+    container_name: redis-insight
+    image: redislabs/redisinsight:latest
+    ports:
+      - 8001:8001
+
   app:
     container_name: circuit-breaker-php.app
     image: circuit-breaker-php
+    environment:
+      - REDIS_HOST=circuit-breaker-php.redis
     volumes:
       - ./:/app
