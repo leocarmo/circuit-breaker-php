@@ -86,6 +86,10 @@ class RedisAdapter implements AdapterInterface
             return (bool) ($this->redis->exec()[0] ?? false);
         }
 
+        if ($this->redis->ttl($serviceName) < 0) {
+            $this->redis->del($serviceName);
+        }
+
         return (bool) $this->redis->incr($serviceName);
     }
 
