@@ -149,4 +149,11 @@ class RedisAdapter implements AdapterInterface
     {
         return 'circuit-breaker:' . $this->redisNamespace . ':' . $service;
     }
+
+    protected function resetKeyIfInfiniteTTL(string $service)
+    {
+        if ($this->redis->ttl($service) === -1) {
+            $this->redis->del($service);
+        }
+    }
 }
