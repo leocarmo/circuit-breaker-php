@@ -1,30 +1,49 @@
-version: '3'
-
 services:
   image:
-    container_name: circuit-breaker-php.image
+    container_name: circuit-breaker-php-image
     image: circuit-breaker-php
     command: list
     build: .
 
   composer:
-    container_name: circuit-breaker-php.composer
+    container_name: circuit-breaker-php-composer
     image: circuit-breaker-php
     depends_on:
       - image
       - redis
     entrypoint: composer
     environment:
-      - REDIS_HOST=circuit-breaker-php.redis
+      - REDIS_HOST=circuit-breaker-php-redis
     volumes:
       - ./:/app
 
   redis:
     image: redis:alpine
-    container_name: circuit-breaker-php.redis
+    container_name: circuit-breaker-php-redis
+    ports:
+      - 6379:6379
+    networks:
+      - global-default
+
+  redisinsight:
+    container_name: circuit-breaker-php-redis-insight
+    image: redislabs/redisinsight:latest
+    ports:
+      - 8001:8001
+      - 5540:5540
+    networks:
+      - global-default
 
   app:
-    container_name: circuit-breaker-php.app
+    container_name: circuit-breaker-php-app
     image: circuit-breaker-php
+    environment:
+      - REDIS_HOST=circuit-breaker-php-redis
     volumes:
       - ./:/app
+    networks:
+      - global-default
+
+networks:
+  global-default:
+    external: true

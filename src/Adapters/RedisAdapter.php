@@ -79,6 +79,8 @@ class RedisAdapter implements AdapterInterface
     {
         $serviceName = $this->makeNamespace($service) . ':failures';
 
+        $this->resetKeyIfInfiniteTTL($serviceName);
+
         if (! $this->redis->get($serviceName)) {
             $this->redis->multi();
             $this->redis->incr($serviceName);
@@ -146,5 +148,12 @@ class RedisAdapter implements AdapterInterface
     protected function makeNamespace(string $service): string
     {
         return 'circuit-breaker:' . $this->redisNamespace . ':' . $service;
+    }
+
+    protected function resetKeyIfInfiniteTTL(string $service)
+    {
+        if ($this->redis->ttl($service) === -1) {
+            $this->redis->del($service);
+        }
     }
 }

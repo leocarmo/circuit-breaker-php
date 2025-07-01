@@ -7,7 +7,7 @@ use LeoCarmo\CircuitBreaker\Adapters\RedisAdapter;
 
 // Connect to redis
 $redis = new \Redis();
-$redis->connect('localhost', 6379);
+$redis->connect(getenv('REDIS_HOST'), 6379);
 
 $adapter = new RedisAdapter($redis, 'my-product');
 
