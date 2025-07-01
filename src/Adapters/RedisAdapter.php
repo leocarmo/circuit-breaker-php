@@ -79,15 +79,15 @@ class RedisAdapter implements AdapterInterface
     {
         $serviceName = $this->makeNamespace($service) . ':failures';
 
+        if ($this->redis->ttl($serviceName) === -1) {
+            $this->redis->del($serviceName);
+        }
+
         if (! $this->redis->get($serviceName)) {
             $this->redis->multi();
             $this->redis->incr($serviceName);
             $this->redis->expire($serviceName, $timeWindow);
             return (bool) ($this->redis->exec()[0] ?? false);
-        }
-
-        if ($this->redis->ttl($serviceName) < 0) {
-            $this->redis->del($serviceName);
         }
 
         return (bool) $this->redis->incr($serviceName);
