@@ -68,6 +68,38 @@ class RedisAdapterTest extends TestCase
         $adapter->incrementFailure('test-service', 30);
     }
 
+    public function testIncrementFailureWithKeyWithTtl()
+    {
+        $redis = $this->createMock(\Redis::class);
+
+        $adapter = new RedisAdapter($redis, 'test-failure');
+
+        $redis->expects($this->once())
+            ->method('ttl')
+            ->willReturn(20);
+
+        $redis->expects($this->never())
+            ->method('del');
+
+        $redis->expects($this->once())
+            ->method('get')
+            ->willReturn(true);
+
+        $redis->expects($this->never())
+            ->method('multi');
+
+        $redis->expects($this->never())
+            ->method('expire');
+
+        $redis->expects($this->never())
+            ->method('exec');
+
+        $redis->expects($this->once())
+            ->method('incr');
+
+        $adapter->incrementFailure('test-service', 30);
+    }
+
     public function testIncrementFailureWithKeyWithoutTtlIntegratedRedis()
     {
         $redis = new \Redis();
