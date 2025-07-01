@@ -13,6 +13,10 @@ class RedisClusterAdapter extends RedisAdapter
     {
         $serviceName = $this->makeNamespace($service) . ':failures';
 
+        if ($this->redis->ttl($serviceName) === -1) {
+            $this->redis->del($serviceName);
+        }
+
         if (! $this->redis->get($serviceName)) {
             $this->redis->incr($serviceName);
             return (bool) $this->redis->expire($serviceName, $timeWindow);
